@@ -1,0 +1,57 @@
+services:
+  # 1. The Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: shortly-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+
+  # 2. The Distributed API Cluster
+  api:
+    build: .
+    # (No container_name here so Docker can spin up multiple named instances)
+    env_file:
+      - .env
+    environment:
+      # Using psycopg for async postgres connection
+      DATABASE_URL: postgresql+asyncpg://shortly:shortly_password@postgres:5432/shortly
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    deploy:
+      replicas: 2
+
+  # 3. The PostgreSQL Database
+  postgres:
+    image: postgres:16
+    container_name: shortly-postgres
+    environment:
+      POSTGRES_USER: shortly
+      POSTGRES_PASSWORD: shortly_password
+      POSTGRES_DB: shortly
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortly -d shortly"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 4. Redis Stack (Cache + Bloom Filter + Rate Limiter)
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: shortly-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
