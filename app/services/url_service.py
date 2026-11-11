@@ -354,7 +354,7 @@ from app.utils.base62 import decode_short_code, encode_short_code
 from app.utils.permutation import permute_id, unpermute_id
 from sqlalchemy import select, text
 
-from sqlalchemy import select, text  # <-- Add `text` to your imports
+from sqlalchemy import select, text  
 
 # ... other imports ...
 
@@ -399,12 +399,22 @@ async def create_short_url(
     return url
 
 async def get_url_by_code(db: AsyncSession, short_code: str) -> URL | None:
-    statement = select(URL).where(URL.short_code == short_code, URL.is_active.is_(True))
-    return await db.scalar(statement)
+    """Optimized: O(1) Primary Key lookup by reversing the math."""
+    url_id = decode_short_code_to_id(short_code)
+    if url_id is None:
+        return None
+
+    url = await get_url_by_id(db=db, url_id=url_id)
+    if url is not None and url.is_active:
+        return url
+    return None
 
 async def get_url_by_code_any_status(db: AsyncSession, short_code: str) -> URL | None:
-    statement = select(URL).where(URL.short_code == short_code)
-    return await db.scalar(statement)
+    """Optimized: O(1) Primary Key lookup by reversing the math."""
+    url_id = decode_short_code_to_id(short_code)
+    if url_id is None:
+        return None
+    return await get_url_by_id(db=db, url_id=url_id)
 
 async def get_url_by_id(db: AsyncSession, url_id: int) -> URL | None:
     return await db.get(URL, url_id)

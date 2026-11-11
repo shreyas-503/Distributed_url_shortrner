@@ -86,4 +86,21 @@ async def check_bloom_filter(short_code: str) -> bool:
     try:
         return await redis_client.bf().exists(BLOOM_FILTER_KEY, short_code)
     except RedisError:
-        return True  # Fail open: if Redis is down, let the DB handle it
+        return True  
+
+
+async def log_click_to_stream(short_code: str, ip_address: str, user_agent: str) -> None:
+    """
+    Publish a click event to a Redis Stream for asynchronous analytics processing.
+    """
+    try:
+        event_data = {
+            "short_code": short_code,
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        # XADD command adds the entry to the stream named "clicks:stream"
+        await redis_client.xadd("clicks:stream", event_data)
+    except RedisError:
+        pass

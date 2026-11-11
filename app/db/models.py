@@ -24,9 +24,9 @@ class URL(Base):
 
     short_code: Mapped[str] = mapped_column(
         String(16),
-        unique=True,
+        #unique=True,
         nullable=False,
-        index=True,
+        #index=True,
     )
 
     original_url: Mapped[str] = mapped_column(

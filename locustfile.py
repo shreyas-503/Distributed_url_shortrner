@@ -1,11 +1,11 @@
 import random
 import string
-from locust import HttpUser, task, between
+from locust import FastHttpUser, task, between
 
 def get_random_ip():
     return f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}"
 
-class URLShortenerUser(HttpUser):
+class URLShortenerUser(FastHttpUser):
     wait_time = between(0.1, 0.5)
 
     def on_start(self):
@@ -41,7 +41,7 @@ class URLShortenerUser(HttpUser):
 
     @task(1)
     def malicious_cache_penetration(self):
-        fake_code = "".join(random.choices(string.ascii_letters + string.digits, k=7))
+        fake_code = "".join(random.choices(string.ascii_letters + string.digits, k=8))
         headers = {"X-Forwarded-For": get_random_ip()}
         
         with self.client.get(f"/{fake_code}", headers=headers, allow_redirects=False, catch_response=True, name="Bloom Filter Block (Fake URL)") as response:

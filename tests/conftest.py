@@ -1,5 +1,6 @@
 import os
 from collections.abc import AsyncGenerator
+from unittest.mock import AsyncMock  # <-- Add this
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -8,9 +9,11 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool  # <-- Add this
 
 from app.db.database import Base, get_db
 from app.main import app
+
 
 import sys
 import asyncio
@@ -20,21 +23,15 @@ from app.cache import cache_service
 from app.core import rate_limiter
 from app.core.config import settings
 
-# Fix for Windows: psycopg requires the SelectorEventLoop
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
-    (
-        "postgresql+psycopg://"
-        "shortly:shortly_password@"
-        "localhost:5432/shortly_test"
-    ),
+    "postgresql+asyncpg://shortly:shortly_password@localhost:5432/shortly"
 )
 
+# FIX 1: Add NullPool to prevent Event Loop crossover errors
 engine = create_async_engine(
     TEST_DATABASE_URL,
+    poolclass=NullPool,  
 )
 
 TestingSessionLocal = async_sessionmaker(
@@ -59,6 +56,13 @@ async def setup_database():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+# FIX 2: Mock the background task so it doesn't leave pending tasks when tests exit
+@pytest.fixture(autouse=True)
+def mock_background_tasks(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.routes.redirect.log_click_to_stream", 
+        AsyncMock()
+    )
 
 @pytest.fixture()
 async def db() -> AsyncGenerator[AsyncSession, None]:

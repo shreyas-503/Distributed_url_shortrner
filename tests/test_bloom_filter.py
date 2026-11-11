@@ -9,7 +9,7 @@ async def test_bloom_filter_blocks_nonexistent_urls(client: AsyncClient):
     Prove that a random, un-created short code gets blocked
     by the Bloom filter before hitting the database.
     """
-    fake_short_code = "zzzzzzz"
+    fake_short_code = "zzzzzzzz"
     
     # 1. Check the bloom filter directly
     might_exist = await check_bloom_filter(fake_short_code)

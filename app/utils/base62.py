@@ -2,7 +2,7 @@ ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 BASE = len(ALPHABET)
 
 
-SHORT_CODE_LENGTH = 7
+SHORT_CODE_LENGTH = 8
 
 
 def encode_short_code(

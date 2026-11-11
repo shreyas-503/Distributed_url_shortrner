@@ -114,56 +114,28 @@ def test_short_code_round_trip(
 
     assert restored_value == value
 
-
-def test_short_code_is_always_seven_characters():
-    test_values = [
-        0,
-        1,
-        42,
-        123,
-        999999,
-        1000000000,
-    ]
+def test_short_code_is_always_eight_characters():
+    test_values = [0, 1, 42, 123, 999999, 1000000000]
 
     for value in test_values:
-
-        permuted_value = permute_id(
-            value
-        )
-
-        short_code = encode_short_code(
-            permuted_value
-        )
-
-        assert len(short_code) == 7
-
+        permuted_value = permute_id(value)
+        short_code = encode_short_code(permuted_value)
+        assert len(short_code) == 8  # Updated to 8
 
 def test_fixed_length_short_code_round_trip():
     original_value = 123456
-
-    permuted_value = permute_id(
-        original_value
-    )
-
-    short_code = encode_short_code(
-        permuted_value
-    )
-
-    decoded_value = decode_short_code(
-        short_code
-    )
-
-    restored_value = unpermute_id(
-        decoded_value
-    )
+    permuted_value = permute_id(original_value)
+    short_code = encode_short_code(permuted_value)
+    decoded_value = decode_short_code(short_code)
+    restored_value = unpermute_id(decoded_value)
 
     assert restored_value == original_value
-    assert len(short_code) == 7
-
+    assert len(short_code) == 8  # Updated to 8
 
 def test_short_code_rejects_invalid_length():
     with pytest.raises(ValueError):
         decode_short_code("abc")
 
     with pytest.raises(ValueError):
-        decode_short_code("abcdefgh")
+        # 9 characters should now fail (since 8 is the valid length)
+        decode_short_code("abcdefghi")

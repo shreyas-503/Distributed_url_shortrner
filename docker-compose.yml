@@ -26,7 +26,7 @@ services:
       redis:
         condition: service_started
     deploy:
-      replicas: 2
+      replicas: 1
 
   # 3. The PostgreSQL Database
   postgres:
@@ -52,6 +52,17 @@ services:
     container_name: shortly-redis
     ports:
       - "6379:6379"
+
+# ... redis service ...
+
+  # 5. Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: shortly-cloudflare
+    command: tunnel --url http://nginx:80  
+    restart: always
+    depends_on:
+      - nginx
 
 volumes:
   postgres_data:
