@@ -47,7 +47,6 @@ from app.services.lookup_result import URLLookupStatus
 from app.services.url_service import get_url_for_redirect
 from app.cache.cache_service import log_click_to_stream 
 
-# Initialize the router (This was accidentally commented out!)
 router = APIRouter(
     tags=["Redirect"],
 )

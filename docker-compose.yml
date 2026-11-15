@@ -32,6 +32,13 @@ services:
   postgres:
     image: postgres:16
     container_name: shortly-postgres
+    command: [
+      "postgres", 
+      "-c", "max_connections=500", 
+      "-c", "checkpoint_timeout=15min", 
+      "-c", "checkpoint_completion_target=0.9",
+      "-c", "max_wal_size=4GB"
+    ]
     environment:
       POSTGRES_USER: shortly
       POSTGRES_PASSWORD: shortly_password

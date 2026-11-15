@@ -6,7 +6,7 @@ def get_random_ip():
     return f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}"
 
 class URLShortenerUser(FastHttpUser):
-    wait_time = between(0.1, 0.5)
+    wait_time = between(0.1, 0.8)
 
     def on_start(self):
         self.created_short_codes = []
