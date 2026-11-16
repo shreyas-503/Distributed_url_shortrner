@@ -6,8 +6,8 @@ from app.core.config import settings
 engine = create_async_engine(
     settings.database_url,
     pool_pre_ping=True,
-    pool_size=20,          # Increased from 5
-    max_overflow=15,       # Extra connections during spikes
+    pool_size=10,          # Increased from 5
+    max_overflow=5,       # Extra connections during spikes
 )
 
 AsyncSessionLocal = async_sessionmaker(
